@@ -74,9 +74,16 @@ Devuelve la cantidad de películas dirigidas por un director, el retorno total y
       "presupuesto": X,
       "ingresos": X
     },
-    ...
+    {
+      "titulo": "Otro título de la película",
+      "fecha_lanzamiento": "Otra fecha",
+      "retorno": X,
+      "presupuesto": X,
+      "ingresos": X
+    }
   ]
 }
+
 ```
 
 ## Estructura del Proyecto
