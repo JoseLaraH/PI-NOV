@@ -1,3 +1,4 @@
 # Ignorar la carpeta data
 data/
 final_data/
+.vscode/
