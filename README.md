@@ -83,13 +83,15 @@ Devuelve la cantidad de películas dirigidas por un director, el retorno total y
     }
   ]
 }
-
 ```
 
 ## Estructura del Proyecto
 El proyecto incluye los siguientes archivos y carpetas principales:
 
 **main.py**: Archivo principal de la API, que contiene la configuración de los endpoints.
+
 **final_data/final_movies.csv**: Archivo CSV con datos de películas procesados y limpios.
+
 **final_data/final_credits.csv**: Archivo CSV con datos de créditos de películas, desanidados y preparados para su uso en la API.
+
 **.gitignore**: Archivo para ignorar archivos innecesarios en el repositorio.
