@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from datetime import datetime
 import pandas as pd
 import ast
+from starlette.responses import RedirectResponse
 
 # Cargar los archivos CSV desde la carpeta final_data
 movies_df = pd.read_csv('final_data/final_movies.csv', low_memory=False)
@@ -198,3 +199,7 @@ def get_director(nombre_director: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {e}")
+    
+@app.get("/", include_in_schema=False)
+async def redirect_to_docs():
+    return RedirectResponse(url="/docs")
