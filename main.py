@@ -3,6 +3,8 @@ from datetime import datetime
 import pandas as pd
 import ast
 from starlette.responses import RedirectResponse
+import uvicorn
+import os
 
 # Cargar los archivos CSV desde la carpeta final_data
 movies_df = pd.read_csv('final_data/optimized_movies.csv', low_memory=False)
@@ -225,3 +227,6 @@ def recomendacion(titulo: str):
 @app.get("/", include_in_schema=False)
 async def redirect_to_docs():
     return RedirectResponse(url="/docs")
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
