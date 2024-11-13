@@ -5,10 +5,15 @@ import ast
 from starlette.responses import RedirectResponse
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import json
 
 # Cargar los archivos CSV desde la carpeta final_data
-movies_df = pd.read_csv('final_data/final_movies.csv', low_memory=False)
-credits_df = pd.read_csv('final_data/final_credits.csv')
+movies_df = pd.read_csv('final_data/optimized_movies.csv', low_memory=False)
+credits_df = pd.read_csv('final_data/optimized_credits.csv')
+
+# Cargar el archivo de recomendaciones desde final_data
+with open('final_data/recommendations.json', 'r') as f:
+    recommendations = json.load(f)
 
 # Convertir `release_date` a formato de fecha para facilitar las consultas
 movies_df['release_date'] = pd.to_datetime(movies_df['release_date'], errors='coerce')
@@ -221,23 +226,7 @@ async def redirect_to_docs():
 
 @app.get("/recomendacion/{titulo}")
 def recomendacion(titulo: str):
-    # Comprobar si la película existe en el conjunto de datos
-    if titulo not in indices:
+    if titulo not in recommendations:
         raise HTTPException(status_code=404, detail="Película no encontrada. Verifica el título ingresado.")
-
-    # Obtener el índice de la película solicitada
-    idx = indices[titulo]
-
-    # Obtener la lista de similitud de la película con todas las demás
-    sim_scores = list(enumerate(cosine_sim[idx]))
-
-    # Ordenar las películas según el puntaje de similitud (de mayor a menor)
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-
-    # Obtener los índices de las 5 películas más similares (excluyendo la película solicitada)
-    sim_scores = sim_scores[1:6]
-    movie_indices = [i[0] for i in sim_scores]
-
-    # Devolver los títulos de las 5 películas más similares
-    recomendaciones = movies_df['title'].iloc[movie_indices].tolist()
-    return recomendaciones
+    
+    return recommendations[titulo]
