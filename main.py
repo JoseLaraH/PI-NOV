@@ -221,12 +221,20 @@ def get_director(nombre_director: str):
         raise HTTPException(status_code=500, detail=f"Error interno: {e}")
     
 
+# Función de recomendación con carga diferida del archivo
 @app.get("/recomendacion/{titulo}")
 def recomendacion(titulo: str):
-    if titulo not in recommendations:
-        raise HTTPException(status_code=404, detail="Película no encontrada. Verifica el título ingresado.")
-    
-    return recommendations[titulo]
+    try:
+        # Cargar recomendaciones solo cuando se llame a la función
+        with open('final_data/recommendations.json', 'r') as f:
+            recommendations = json.load(f)
+        
+        if titulo not in recommendations:
+            raise HTTPException(status_code=404, detail="Película no encontrada. Verifica el título ingresado.")
+        
+        return recommendations[titulo]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno: {e}")
 
 @app.get("/", include_in_schema=False)
 async def redirect_to_docs():
