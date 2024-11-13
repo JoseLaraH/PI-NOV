@@ -220,9 +220,6 @@ def get_director(nombre_director: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {e}")
     
-@app.get("/", include_in_schema=False)
-async def redirect_to_docs():
-    return RedirectResponse(url="/docs")
 
 @app.get("/recomendacion/{titulo}")
 def recomendacion(titulo: str):
@@ -230,3 +227,7 @@ def recomendacion(titulo: str):
         raise HTTPException(status_code=404, detail="Película no encontrada. Verifica el título ingresado.")
     
     return recommendations[titulo]
+
+@app.get("/", include_in_schema=False)
+async def redirect_to_docs():
+    return RedirectResponse(url="/docs")
