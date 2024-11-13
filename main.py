@@ -13,10 +13,6 @@ import csv
 movies_df = pd.read_csv('final_data/optimized_movies.csv', low_memory=False)
 credits_df = pd.read_csv('final_data/optimized_credits.csv')
 
-# Cargar el archivo de recomendaciones desde final_data
-with open('final_data/recommendations.json', 'r') as f:
-    recommendations = json.load(f)
-
 # Convertir `release_date` a formato de fecha para facilitar las consultas
 movies_df['release_date'] = pd.to_datetime(movies_df['release_date'], errors='coerce')
 
