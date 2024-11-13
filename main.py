@@ -5,15 +5,14 @@ import ast
 from starlette.responses import RedirectResponse
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import csv
 
 # Cargar los archivos CSV desde la carpeta final_data
 movies_df = pd.read_csv('final_data/optimized_movies.csv', low_memory=False)
 credits_df = pd.read_csv('final_data/optimized_credits.csv')
-try:
-    recommendations_df = pd.read_csv('final_data/recommendations.csv', encoding='utf-8')
-except Exception as e:
-    raise RuntimeError(f"Error al cargar recommendations.csv: {e}")
+#try:
+#    recommendations_df = pd.read_csv('final_data/recommendations.csv', encoding='utf-8')
+#except Exception as e:
+#    raise RuntimeError(f"Error al cargar recommendations.csv: {e}")
 
 # Convertir `release_date` a formato de fecha para facilitar las consultas
 movies_df['release_date'] = pd.to_datetime(movies_df['release_date'], errors='coerce')
@@ -220,8 +219,8 @@ def get_director(nombre_director: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {e}")
 
-@app.get("/recomendacion/{titulo}")
-def recomendacion(titulo: str):
+#@app.get("/recomendacion/{titulo}")
+#def recomendacion(titulo: str):
     try:
         # Filtrar el DataFrame para encontrar el título solicitado
         fila = recommendations_df[recommendations_df["title"] == titulo]
