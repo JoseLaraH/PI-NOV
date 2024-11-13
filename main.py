@@ -3,6 +3,8 @@ from datetime import datetime
 import pandas as pd
 import ast
 from starlette.responses import RedirectResponse
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Cargar los archivos CSV desde la carpeta final_data
 movies_df = pd.read_csv('final_data/final_movies.csv', low_memory=False)
@@ -42,6 +44,19 @@ dias_semana = {
     "viernes": 4, "sábado": 5, "domingo": 6
 }
 
+# Preprocesar los datos de texto para la recomendación
+# Crear una columna 'content' combinando título, géneros, y descripción de la película
+movies_df['content'] = movies_df['title'] + " " + movies_df['genres'] + " " + movies_df['overview']
+
+# Vectorización TF-IDF
+tfidf = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf.fit_transform(movies_df['content'].fillna(''))
+
+# Cálculo de la similitud de coseno
+cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+
+# Crear un índice de títulos para un acceso rápido
+indices = pd.Series(movies_df.index, index=movies_df['title']).drop_duplicates()
 
 
 @app.get('/cantidad_filmaciones_mes/{mes}')
@@ -203,3 +218,26 @@ def get_director(nombre_director: str):
 @app.get("/", include_in_schema=False)
 async def redirect_to_docs():
     return RedirectResponse(url="/docs")
+
+@app.get("/recomendacion/{titulo}")
+def recomendacion(titulo: str):
+    # Comprobar si la película existe en el conjunto de datos
+    if titulo not in indices:
+        raise HTTPException(status_code=404, detail="Película no encontrada. Verifica el título ingresado.")
+
+    # Obtener el índice de la película solicitada
+    idx = indices[titulo]
+
+    # Obtener la lista de similitud de la película con todas las demás
+    sim_scores = list(enumerate(cosine_sim[idx]))
+
+    # Ordenar las películas según el puntaje de similitud (de mayor a menor)
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+    # Obtener los índices de las 5 películas más similares (excluyendo la película solicitada)
+    sim_scores = sim_scores[1:6]
+    movie_indices = [i[0] for i in sim_scores]
+
+    # Devolver los títulos de las 5 películas más similares
+    recomendaciones = movies_df['title'].iloc[movie_indices].tolist()
+    return recomendaciones
