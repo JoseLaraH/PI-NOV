@@ -140,6 +140,88 @@ def votos_titulo(titulo: str):
         "mensaje": f"La película '{titulo_pelicula}' cuenta con un total de {votos} valoraciones, con un promedio de {promedio_votos}."
     }
 
+@app.get('/get_actor/{nombre_actor}')
+def get_actor(nombre_actor: str):
+    try:
+        # Convertir nombre_actor en minúsculas para una búsqueda insensible a mayúsculas
+        nombre_actor = nombre_actor.lower()
+        
+        # Filtrar el DataFrame de créditos para obtener las películas en las que ha participado el actor
+        peliculas_actor = credits_df[credits_df['cast_names'].apply(
+            lambda nombres: any(actor.lower() == nombre_actor for actor in nombres) if isinstance(nombres, list) else False
+        )]
+        
+        # Verificar si se encontró el actor en alguna película
+        if peliculas_actor.empty:
+            raise HTTPException(status_code=404, detail="Actor no encontrado. Verifica el nombre ingresado.")
+        
+        # Unir los DataFrames para obtener información sobre el retorno de las películas
+        peliculas_con_retorno = peliculas_actor.merge(movies_df[['id', 'return']], on='id', how='inner')
+        
+        # Calcular la cantidad de películas, el retorno total y el retorno promedio
+        cantidad_peliculas = peliculas_con_retorno.shape[0]
+        retorno_total = peliculas_con_retorno['return'].sum()
+        retorno_promedio = retorno_total / cantidad_peliculas if cantidad_peliculas > 0 else 0
+
+        return {
+            "mensaje": f"El actor {nombre_actor.capitalize()} ha participado de {cantidad_peliculas} filmaciones, "
+                       f"con un retorno total de {retorno_total} y un promedio de {retorno_promedio} por filmación."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno: {e}")
+
+@app.get('/get_director/{nombre_director}')
+def get_director(nombre_director: str):
+    try:
+        # Convertir nombre_director a minúsculas para búsqueda insensible a mayúsculas
+        nombre_director = nombre_director.lower()
+        
+        # Filtrar `credits_df` para encontrar películas en las que el director trabajó
+        peliculas_director = credits_df[
+            credits_df['crew_jobs'].apply(
+                lambda jobs: "Director" in jobs if isinstance(jobs, list) else False
+            ) &
+            credits_df['crew_names'].apply(
+                lambda names: any(director.lower() == nombre_director for director in names) if isinstance(names, list) else False
+            )
+        ]
+        
+        # Verificar si se encontró al director en alguna película
+        if peliculas_director.empty:
+            raise HTTPException(status_code=404, detail="Director no encontrado. Verifica el nombre ingresado.")
+        
+        # Unir `peliculas_director` con `movies_df` para obtener datos de cada película
+        peliculas_con_retorno = peliculas_director.merge(
+            movies_df[['id', 'title', 'release_date', 'return', 'budget', 'revenue']],
+            on='id',
+            how='inner'
+        )
+        
+        # Calcular el retorno total y el retorno promedio
+        retorno_total = peliculas_con_retorno['return'].sum()
+        retorno_promedio = retorno_total / peliculas_con_retorno.shape[0] if peliculas_con_retorno.shape[0] > 0 else 0
+
+        # Crear la lista de películas con los detalles solicitados
+        detalles_peliculas = peliculas_con_retorno.apply(
+            lambda row: {
+                "titulo": row['title'],
+                "fecha_lanzamiento": row['release_date'],
+                "retorno": row['return'],
+                "presupuesto": row['budget'],
+                "ingresos": row['revenue']
+            },
+            axis=1
+        ).tolist()
+        
+        return {
+            "mensaje": f"El director {nombre_director.capitalize()} ha participado en {peliculas_con_retorno.shape[0]} filmaciones.",
+            "retorno_total": retorno_total,
+            "retorno_promedio": retorno_promedio,
+            "detalles_peliculas": detalles_peliculas
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno: {e}")
+
 @app.get("/recomendacion/{titulo}")
 def recomendacion(titulo: str):
     try:
