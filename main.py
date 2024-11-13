@@ -6,6 +6,7 @@ from starlette.responses import RedirectResponse
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
+import os
 
 # Cargar los archivos CSV desde la carpeta final_data
 movies_df = pd.read_csv('final_data/optimized_movies.csv', low_memory=False)
@@ -239,3 +240,8 @@ def recomendacion(titulo: str):
 @app.get("/", include_in_schema=False)
 async def redirect_to_docs():
     return RedirectResponse(url="/docs")
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))  # Usa el puerto de entorno o el 8000 por defecto
+    uvicorn.run(app, host="0.0.0.0", port=port)
