@@ -1,6 +1,21 @@
-# Proyecto de API para Procesamiento de Datos de Películas
+# Proyecto de API para Procesamiento de Datos de Películas y Sistema de Recomendación
 
-Este proyecto consiste en una API desarrollada en **FastAPI** para disponibilizar datos de películas. La API permite consultar datos procesados y limpiados a partir de archivos CSV (`final_movies.csv` y `final_credits.csv`). 
+Este proyecto consiste en una API desarrollada en **FastAPI** para disponibilizar datos de películas. La API permite consultar datos procesados y limpiados a partir de archivos CSV (`optimized_movies.csv` y `optimized_credits.csv`). 
+
+Los datos utilizados para la API están en formato CSV y han sido optimizados para reducir el uso de memoria y mejorar el rendimiento:
+
+- **`optimized_movies.csv`**: Contiene información relevante sobre las películas, incluyendo:
+  - `id`: Identificador único de cada película.
+  - `title`: Título de la película.
+  - `release_date`, `release_year`: Fecha y año de lanzamiento.
+  - `popularity`, `vote_average`, `vote_count`: Popularidad y puntuaciones.
+  - `genres_names`, `overview`: Géneros y descripción de la película, utilizados en la recomendación.
+  - `return`, `revenue`, `budget`, `runtime`: Información financiera y duración, necesarias para el análisis exploratorio de datos (EDA) y algunas funciones de la API.
+
+- **`optimized_credits.csv`**: Contiene información sobre el elenco y equipo de cada película, incluyendo:
+  - `id`: Identificador único de cada película, para relacionar con `optimized_movies.csv`.
+  - `cast_names`, `cast_characters`: Nombres y personajes de los actores.
+  - `crew_names`, `crew_jobs`: Nombres y roles de los miembros del equipo, como directores.
 
 ## Funcionalidades de la API
 
@@ -85,13 +100,28 @@ Devuelve la cantidad de películas dirigidas por un director, el retorno total y
 }
 ```
 
+### 7. GET /get_director/{nombre_director}
+
+La función recomendacion es un sistema de recomendación optimizado que recomienda películas similares basadas en una lista de palabras clave. Esta función:
+
+Filtra las palabras clave más comunes en títulos de películas: "Night", "Day", "Love", "Man", "Girl", "Last", "Movie", "Time", "World".
+Precalcula la similitud entre películas utilizando TF-IDF solo con las palabras clave seleccionadas, mejorando el rendimiento.
+Almacena las recomendaciones precalculadas en el archivo recommendations.json en la carpeta final_data, permitiendo que la API acceda rápidamente a las recomendaciones sin realizar cálculos intensivos en cada solicitud.
+
+**Ejemplo de respuesta:**
+```json
+{
+  "recomendaciones": ["Película A", "Película B", "Película C", "Película D", "Película E"]
+}
+```
+
 ## Estructura del Proyecto
 El proyecto incluye los siguientes archivos y carpetas principales:
 
 **main.py**: Archivo principal de la API, que contiene la configuración de los endpoints.
 
-**final_data/final_movies.csv**: Archivo CSV con datos de películas procesados y limpios.
+**final_data/optimized_movies.csv**: Archivo CSV con datos de películas procesados y limpios.
 
-**final_data/final_credits.csv**: Archivo CSV con datos de créditos de películas, desanidados y preparados para su uso en la API.
+**final_data/optimized_credits.csv**: Archivo CSV con datos de créditos de películas, desanidados y preparados para su uso en la API.
 
 **.gitignore**: Archivo para ignorar archivos innecesarios en el repositorio.
