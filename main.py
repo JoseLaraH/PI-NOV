@@ -7,6 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 import os
+import csv
 
 # Cargar los archivos CSV desde la carpeta final_data
 movies_df = pd.read_csv('final_data/optimized_movies.csv', low_memory=False)
@@ -222,18 +223,21 @@ def get_director(nombre_director: str):
         raise HTTPException(status_code=500, detail=f"Error interno: {e}")
     
 
-# Función de recomendación con carga diferida del archivo
+# Función de recomendación para leer desde CSV
 @app.get("/recomendacion/{titulo}")
 def recomendacion(titulo: str):
     try:
-        # Cargar recomendaciones solo cuando se llame a la función
-        with open('final_data/recommendations.json', 'r') as f:
-            recommendations = json.load(f)
+        # Abrir y buscar en el archivo CSV
+        with open('final_data/recommendations.csv', 'r', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row["title"] == titulo:
+                    # Extraer las recomendaciones de las columnas
+                    recomendaciones = [row[f"recommendation_{i}"] for i in range(1, 6) if row[f"recommendation_{i}"]]
+                    return {"recomendaciones": recomendaciones}
         
-        if titulo not in recommendations:
-            raise HTTPException(status_code=404, detail="Película no encontrada. Verifica el título ingresado.")
-        
-        return recommendations[titulo]
+        # Si no se encuentra la película
+        raise HTTPException(status_code=404, detail="Película no encontrada. Verifica el título ingresado.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {e}")
 
