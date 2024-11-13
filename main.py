@@ -46,7 +46,7 @@ dias_semana = {
 
 # Preprocesar los datos de texto para la recomendación
 # Crear una columna 'content' combinando título, géneros, y descripción de la película
-movies_df['content'] = movies_df['title'] + " " + movies_df['genres'] + " " + movies_df['overview']
+movies_df['content'] = movies_df['title'] + " " + movies_df['genres_names'] + " " + movies_df['overview']
 
 # Vectorización TF-IDF
 tfidf = TfidfVectorizer(stop_words='english')
