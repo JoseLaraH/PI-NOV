@@ -3,16 +3,14 @@ from datetime import datetime
 import pandas as pd
 import ast
 from starlette.responses import RedirectResponse
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 # Cargar los archivos CSV desde la carpeta final_data
 movies_df = pd.read_csv('final_data/optimized_movies.csv', low_memory=False)
 credits_df = pd.read_csv('final_data/optimized_credits.csv')
-#try:
-#    recommendations_df = pd.read_csv('final_data/recommendations.csv', encoding='utf-8')
-#except Exception as e:
-#    raise RuntimeError(f"Error al cargar recommendations.csv: {e}")
+try:
+    recommendations_df = pd.read_csv('final_data/recommendations.csv', encoding='utf-8')
+except Exception as e:
+    raise RuntimeError(f"Error al cargar recommendations.csv: {e}")
 
 # Convertir `release_date` a formato de fecha para facilitar las consultas
 movies_df['release_date'] = pd.to_datetime(movies_df['release_date'], errors='coerce')
@@ -48,20 +46,8 @@ dias_semana = {
     "viernes": 4, "sábado": 5, "domingo": 6
 }
 
-# Preprocesar los datos de texto para la recomendación
-# Crear una columna 'content' combinando título, géneros, y descripción de la película
-movies_df['content'] = movies_df['title'] + " " + movies_df['genres_names'] + " " + movies_df['overview']
-
-# Vectorización TF-IDF
-tfidf = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf.fit_transform(movies_df['content'].fillna(''))
-
-# Cálculo de la similitud de coseno
-cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
-
 # Crear un índice de títulos para un acceso rápido
 indices = pd.Series(movies_df.index, index=movies_df['title']).drop_duplicates()
-
 
 @app.get('/cantidad_filmaciones_mes/{mes}')
 def cantidad_filmaciones_mes(mes: str):
@@ -219,8 +205,8 @@ def get_director(nombre_director: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {e}")
 
-#@app.get("/recomendacion/{titulo}")
-#def recomendacion(titulo: str):
+@app.get("/recomendacion/{titulo}")
+def recomendacion(titulo: str):
     try:
         # Filtrar el DataFrame para encontrar el título solicitado
         fila = recommendations_df[recommendations_df["title"] == titulo]
